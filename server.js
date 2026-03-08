@@ -27,17 +27,15 @@ const r = await fetch("https://api.sambanova.ai/v1/chat/completions",{
         "Content-Type":"application/json"
     },
     body:JSON.stringify({
-
-        model:"Meta-Llama-3.1-8B-Instruct",
-
-        messages:[
-            {role:"system",content:"Bạn là AI chuyên viết lời chúc sáng tạo"},
-            {role:"user",content: prompt + " " + Math.random()}
-        ],
-
-        temperature:1
-
-    })
+ model:"Meta-Llama-3.1-8B-Instruct",
+ messages:[
+  {role:"system",content:"Bạn là AI chuyên viết lời chúc sáng tạo"},
+  {role:"user",content: prompt + " " + Math.random()}
+ ],
+ temperature:1,
+ top_p:0.9,
+ presence_penalty:0.6,
+ frequency_penalty:0.6
 })
         const data = await r.json()
 
