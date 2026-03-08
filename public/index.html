@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Hello Nhi</title>
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:sans-serif;
+margin:0;
+}
+
+.hero{
+height:100vh;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+}
+
+#wishes{
+max-width:700px;
+margin:auto;
+padding:40px;
+}
+
+.wish{
+font-size:26px;
+margin:120px 0;
+opacity:0;
+transform:translateY(40px);
+transition:1s;
+}
+
+.show{
+opacity:1;
+transform:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="hero">
+<h1>Hello Nhi ❤️</h1>
+<p>Kéo xuống để xem lời chúc vô tận</p>
+</div>
+
+<div id="wishes"></div>
+
+<script>
+
+const container = document.getElementById("wishes")
+
+async function createWish(){
+
+    const r = await fetch("/api/wish")
+    const data = await r.json()
+
+    const div = document.createElement("div")
+    div.className = "wish"
+    div.innerText = data.text
+
+    container.appendChild(div)
+
+    setTimeout(()=>{
+        div.classList.add("show")
+    },100)
+
+}
+
+async function loadMore(){
+
+    for(let i=0;i<4;i++){
+        await createWish()
+    }
+
+}
+
+window.addEventListener("scroll",()=>{
+
+    if(window.innerHeight + window.scrollY >= document.body.offsetHeight-200){
+        loadMore()
+    }
+
+})
+
+loadMore()
+
+</script>
+
+</body>
+</html>
