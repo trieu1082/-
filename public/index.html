@@ -2,37 +2,55 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Hello Nhi</title>
+<title>Nhi</title>
 
 <style>
 
 body{
-background:#0f172a;
-color:white;
-font-family:sans-serif;
 margin:0;
+background:#070016;
+font-family:sans-serif;
+overflow-x:hidden;
+color:white;
 }
 
 .hero{
 height:100vh;
 display:flex;
 flex-direction:column;
-align-items:center;
 justify-content:center;
+align-items:center;
 text-align:center;
 }
 
+h1{
+font-size:70px;
+background:linear-gradient(90deg,#a855f7,#22d3ee);
+-webkit-background-clip:text;
+color:transparent;
+animation:colorShift 4s infinite alternate;
+}
+
+@keyframes colorShift{
+0%{filter:hue-rotate(0deg)}
+100%{filter:hue-rotate(120deg)}
+}
+
 #wishes{
-max-width:700px;
+max-width:900px;
 margin:auto;
 padding:40px;
 }
 
 .wish{
-font-size:26px;
-margin:120px 0;
+font-size:34px;
+margin:140px 0;
+padding:30px;
+border-radius:20px;
+border:3px solid rgba(150,120,255,0.6);
+box-shadow:0 0 20px rgba(150,120,255,0.5);
 opacity:0;
-transform:translateY(40px);
+transform:translateY(60px);
 transition:1s;
 }
 
@@ -41,13 +59,30 @@ opacity:1;
 transform:none;
 }
 
+.wishText{
+background:linear-gradient(90deg,#a855f7,#22d3ee);
+-webkit-background-clip:text;
+color:transparent;
+font-weight:bold;
+font-size:36px;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+pointer-events:none;
+}
+
 </style>
 </head>
 
 <body>
 
+<canvas id="fire"></canvas>
+
 <div class="hero">
-<h1>Hello Nhi ❤️</h1>
+<h1>Hello Nhi 💜</h1>
 <p>Kéo xuống để xem lời chúc vô tận</p>
 </div>
 
@@ -59,40 +94,113 @@ const container = document.getElementById("wishes")
 
 async function createWish(){
 
-    const r = await fetch("/api/wish")
-    const data = await r.json()
+const r = await fetch("/api/wish")
+const data = await r.json()
 
-    const div = document.createElement("div")
-    div.className = "wish"
-    div.innerText = data.text
+const div=document.createElement("div")
+div.className="wish"
 
-    container.appendChild(div)
+const text=document.createElement("div")
+text.className="wishText"
+text.innerText=data.text
 
-    setTimeout(()=>{
-        div.classList.add("show")
-    },100)
+div.appendChild(text)
+container.appendChild(div)
+
+setTimeout(()=>div.classList.add("show"),100)
 
 }
 
 async function loadMore(){
-
-    for(let i=0;i<4;i++){
-        await createWish()
-    }
-
+for(let i=0;i<4;i++) await createWish()
 }
 
 window.addEventListener("scroll",()=>{
-
-    if(window.innerHeight + window.scrollY >= document.body.offsetHeight-200){
-        loadMore()
-    }
-
+if(window.innerHeight+window.scrollY>=document.body.offsetHeight-300){
+loadMore()
+}
 })
 
 loadMore()
 
 </script>
+const canvas=document.getElementById("fire")
+const ctx=canvas.getContext("2d")
 
-</body>
-</html>
+canvas.width=innerWidth
+canvas.height=innerHeight
+
+let particles=[]
+
+function firework(){
+
+let x=Math.random()*canvas.width
+let y=canvas.height
+let targetY=Math.random()*canvas.height*0.5
+
+let color=`hsl(${Math.random()*360},100%,60%)`
+
+particles.push({
+x,y,targetY,color,stage:"fly"
+})
+
+}
+
+function explode(x,y,color){
+
+for(let i=0;i<40;i++){
+
+particles.push({
+x,y,
+vx:(Math.random()-0.5)*6,
+vy:(Math.random()-0.5)*6,
+life:60,
+color,
+stage:"explode"
+})
+
+}
+
+}
+
+function update(){
+
+ctx.fillStyle="rgba(0,0,0,0.2)"
+ctx.fillRect(0,0,canvas.width,canvas.height)
+
+particles.forEach((p,i)=>{
+
+ctx.fillStyle=p.color
+
+if(p.stage==="fly"){
+
+p.y-=5
+
+ctx.fillRect(p.x,p.y,3,3)
+
+if(p.y<p.targetY){
+explode(p.x,p.y,p.color)
+particles.splice(i,1)
+}
+
+}else{
+
+p.x+=p.vx
+p.y+=p.vy
+p.life--
+
+ctx.fillRect(p.x,p.y,3,3)
+
+if(p.life<=0) particles.splice(i,1)
+
+}
+
+})
+
+requestAnimationFrame(update)
+
+}
+
+setInterval(firework,800)
+
+update()
